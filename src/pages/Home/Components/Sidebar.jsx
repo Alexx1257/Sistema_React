@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Icon from '../../../components/common/Icon';
+import Icon from '../../../Components/Common/Icon';
 
 const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarOpen }) => {
     const [expandedSections, setExpandedSections] = useState({
@@ -117,15 +117,15 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
             )}
 
             <aside className={`
-        fixed lg:static inset-y-0 left-0 z-30 bg-gradient-to-b from-blue-800 to-blue-900 text-white
+        fixed lg:static inset-y-0 left-0 z-30 bg-gradient-to-b from-sidebar-start to-sidebar-end text-white
         transform transition-all duration-300 ease-in-out
         ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'}
         lg:flex lg:flex-col
       `}>
-                <div className="p-4 border-b border-blue-700 flex items-center justify-between">
+                <div className="p-4 border-b border-brand-dark flex items-center justify-between">
                     <div className={`flex items-center space-x-3 overflow-hidden ${!isSidebarOpen && 'lg:hidden'}`}>
                         <div className="bg-white p-2 rounded-lg shrink-0">
-                            <Icon name="computer" className="w-6 h-6 text-blue-700" />
+                            <Icon name="computer" className="w-6 h-6 text-brand" />
                         </div>
                         <div className="whitespace-nowrap">
                             <h1 className="text-lg font-bold">Gestión</h1>
@@ -133,7 +133,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 hover:bg-blue-700 rounded-lg hidden lg:block"
+                        className="p-2 hover:bg-brand-dark rounded-lg hidden lg:block"
                     >
                         <Icon name="menu" className="w-6 h-6" />
                     </button>
@@ -147,7 +147,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                     <>
                                         <button
                                             onClick={() => isSidebarOpen ? toggleSection(item.id) : setIsSidebarOpen(true)}
-                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors hover:bg-blue-700 ${activeSection === item.id ? 'bg-blue-700' : ''
+                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === item.id ? 'bg-brand-dark' : ''
                                                 }`}
                                         >
                                             <div className="flex items-center space-x-3">
@@ -163,14 +163,14 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                         </button>
 
                                         {isSidebarOpen && expandedSections[item.id] && (
-                                            <ul className="mt-1 ml-4 space-y-1 border-l border-blue-600 pl-2">
+                                            <ul className="mt-1 ml-4 space-y-1 border-l border-brand-dark pl-2">
                                                 {item.subItems.map((subItem) => (
                                                     <li key={subItem.id}>
                                                         {subItem.subItems ? (
                                                             <>
                                                                 <button
                                                                     onClick={() => toggleSection(subItem.id)}
-                                                                    className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors hover:bg-blue-700"
+                                                                    className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors hover:bg-brand-dark"
                                                                 >
                                                                     <span className="text-sm">{subItem.name}</span>
                                                                     <Icon
@@ -179,12 +179,12 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                                                     />
                                                                 </button>
                                                                 {expandedSections[subItem.id] && (
-                                                                    <ul className="mt-1 ml-4 space-y-1 border-l border-blue-500 pl-2">
+                                                                    <ul className="mt-1 ml-4 space-y-1 border-l border-brand-light pl-2">
                                                                         {subItem.subItems.map((deepItem) => (
                                                                             <li key={deepItem.id}>
                                                                                 <button
                                                                                     onClick={() => setActiveSection(deepItem.id)}
-                                                                                    className={`w-full text-left px-4 py-1.5 rounded-lg transition-colors hover:bg-blue-700 ${activeSection === deepItem.id ? 'bg-blue-700 font-bold' : ''
+                                                                                    className={`w-full text-left px-4 py-1.5 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === deepItem.id ? 'bg-brand-dark font-bold' : ''
                                                                                         }`}
                                                                                 >
                                                                                     <span className="text-xs">{deepItem.name}</span>
@@ -197,7 +197,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                                         ) : (
                                                             <button
                                                                 onClick={() => setActiveSection(subItem.id)}
-                                                                className={`w-full text-left px-4 py-2 rounded-lg transition-colors hover:bg-blue-700 ${activeSection === subItem.id ? 'bg-blue-700' : ''
+                                                                className={`w-full text-left px-4 py-2 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === subItem.id ? 'bg-brand-dark' : ''
                                                                     }`}
                                                             >
                                                                 <span className="text-sm">{subItem.name}</span>
@@ -211,7 +211,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                 ) : (
                                     <button
                                         onClick={() => setActiveSection(item.id)}
-                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-blue-700 ${activeSection === item.id ? 'bg-blue-700' : ''
+                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === item.id ? 'bg-brand-dark' : ''
                                             }`}
                                     >
                                         <Icon name={item.icon} />
@@ -223,15 +223,15 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                     </ul>
                 </nav>
 
-                <div className="p-4 border-t border-blue-700">
+                <div className="p-4 border-t border-brand-dark">
                     <div className="flex items-center space-x-3">
-                        <div className="bg-blue-600 p-2 rounded-full shrink-0">
+                        <div className="bg-brand p-2 rounded-full shrink-0">
                             <Icon name="user" className="w-5 h-5" />
                         </div>
                         {isSidebarOpen && (
                             <div className="flex-1 overflow-hidden">
                                 <p className="font-medium truncate">Admin Sistema</p>
-                                <p className="text-blue-200 text-sm truncate">Informática</p>
+                                <p className="text-brand-light text-sm truncate">Informática</p>
                             </div>
                         )}
                     </div>

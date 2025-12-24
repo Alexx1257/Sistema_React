@@ -1,5 +1,5 @@
 import React from 'react';
-import Icon from '../../../components/common/Icon';
+import Icon from '../../../Components/Common/Icon';
 
 const Header = ({ isSidebarOpen, setIsSidebarOpen, activeSection }) => {
     const sectionTitles = {
@@ -53,7 +53,7 @@ const Header = ({ isSidebarOpen, setIsSidebarOpen, activeSection }) => {
                         <input
                             type="text"
                             placeholder="Buscar en el sistema..."
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                         />
                         <Icon name="search" className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
                     </div>
