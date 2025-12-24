@@ -41,26 +41,16 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                         { id: 'plotters', name: 'Plotters' },
                     ]
                 },
-                {
-                    id: 'proyeccion',
-                    name: 'Equipos de proyección',
-                    subItems: [{ id: 'proyectores', name: 'Proyectores' }]
-                },
+                { id: 'proyeccion', name: 'Equipos de proyección', subItems: [{ id: 'proyectores', name: 'Proyectores' }] },
                 {
                     id: 'telecomunicaciones',
                     name: 'Equipos de telecomunicaciones',
-                    subItems: [
-                        { id: 'switches', name: 'Switches' },
-                        { id: 'routers', name: 'Routers' },
-                    ]
+                    subItems: [{ id: 'switches', name: 'Switches' }, { id: 'routers', name: 'Routers' }]
                 },
                 {
                     id: 'energia',
                     name: 'Equipos de energía',
-                    subItems: [
-                        { id: 'reguladores', name: 'Reguladores' },
-                        { id: 'ups', name: 'UPS' },
-                    ]
+                    subItems: [{ id: 'reguladores', name: 'Reguladores' }, { id: 'ups', name: 'UPS' }]
                 },
             ]
         },
@@ -78,18 +68,12 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                 {
                     id: 'hojas-servicio',
                     name: 'Hojas de servicio',
-                    subItems: [
-                        { id: 'hoja-registro', name: 'Registro' },
-                        { id: 'hoja-historial', name: 'Historial' },
-                    ]
+                    subItems: [{ id: 'hoja-registro', name: 'Registro' }, { id: 'hoja-historial', name: 'Historial' }]
                 },
                 {
                     id: 'vales',
                     name: 'Vales',
-                    subItems: [
-                        { id: 'vale-entrada', name: 'Vales de entrada' },
-                        { id: 'vale-salida', name: 'Vales de salida' },
-                    ]
+                    subItems: [{ id: 'vale-entrada', name: 'Vales de entrada' }, { id: 'vale-salida', name: 'Vales de salida' }]
                 },
             ]
         },
@@ -117,15 +101,15 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
             )}
 
             <aside className={`
-        fixed lg:static inset-y-0 left-0 z-30 bg-gradient-to-b from-sidebar-start to-sidebar-end text-white
+        fixed lg:static inset-y-0 left-0 z-30 bg-gradient-to-b from-sidebar-backgroundStart to-sidebar-backgroundEnd text-white
         transform transition-all duration-300 ease-in-out
         ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'}
         lg:flex lg:flex-col
       `}>
-                <div className="p-4 border-b border-brand-dark flex items-center justify-between">
+                <div className="p-4 border-b border-white/10 flex items-center justify-between">
                     <div className={`flex items-center space-x-3 overflow-hidden ${!isSidebarOpen && 'lg:hidden'}`}>
                         <div className="bg-white p-2 rounded-lg shrink-0">
-                            <Icon name="computer" className="w-6 h-6 text-brand" />
+                            <Icon name="computer" className="w-6 h-6 text-ui-primary" />
                         </div>
                         <div className="whitespace-nowrap">
                             <h1 className="text-lg font-bold">Gestión</h1>
@@ -133,7 +117,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 hover:bg-brand-dark rounded-lg hidden lg:block"
+                        className="p-2 hover:bg-white/10 rounded-lg hidden lg:block"
                     >
                         <Icon name="menu" className="w-6 h-6" />
                     </button>
@@ -147,7 +131,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                     <>
                                         <button
                                             onClick={() => isSidebarOpen ? toggleSection(item.id) : setIsSidebarOpen(true)}
-                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === item.id ? 'bg-brand-dark' : ''
+                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10' : ''
                                                 }`}
                                         >
                                             <div className="flex items-center space-x-3">
@@ -161,16 +145,15 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                                 />
                                             )}
                                         </button>
-
                                         {isSidebarOpen && expandedSections[item.id] && (
-                                            <ul className="mt-1 ml-4 space-y-1 border-l border-brand-dark pl-2">
+                                            <ul className="mt-1 ml-4 space-y-1 border-l border-white/20 pl-2">
                                                 {item.subItems.map((subItem) => (
                                                     <li key={subItem.id}>
                                                         {subItem.subItems ? (
                                                             <>
                                                                 <button
                                                                     onClick={() => toggleSection(subItem.id)}
-                                                                    className="w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors hover:bg-brand-dark"
+                                                                    className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-white/10"
                                                                 >
                                                                     <span className="text-sm">{subItem.name}</span>
                                                                     <Icon
@@ -179,12 +162,12 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                                                     />
                                                                 </button>
                                                                 {expandedSections[subItem.id] && (
-                                                                    <ul className="mt-1 ml-4 space-y-1 border-l border-brand-light pl-2">
+                                                                    <ul className="mt-1 ml-4 space-y-1 border-l border-white/10 pl-2">
                                                                         {subItem.subItems.map((deepItem) => (
                                                                             <li key={deepItem.id}>
                                                                                 <button
                                                                                     onClick={() => setActiveSection(deepItem.id)}
-                                                                                    className={`w-full text-left px-4 py-1.5 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === deepItem.id ? 'bg-brand-dark font-bold' : ''
+                                                                                    className={`w-full text-left px-4 py-1.5 rounded-lg hover:bg-white/10 ${activeSection === deepItem.id ? 'bg-ui-primary/30 font-bold' : ''
                                                                                         }`}
                                                                                 >
                                                                                     <span className="text-xs">{deepItem.name}</span>
@@ -197,7 +180,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                                         ) : (
                                                             <button
                                                                 onClick={() => setActiveSection(subItem.id)}
-                                                                className={`w-full text-left px-4 py-2 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === subItem.id ? 'bg-brand-dark' : ''
+                                                                className={`w-full text-left px-4 py-2 rounded-lg hover:bg-white/10 ${activeSection === subItem.id ? 'bg-ui-primary/30' : ''
                                                                     }`}
                                                             >
                                                                 <span className="text-sm">{subItem.name}</span>
@@ -211,7 +194,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                 ) : (
                                     <button
                                         onClick={() => setActiveSection(item.id)}
-                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-brand-dark ${activeSection === item.id ? 'bg-brand-dark' : ''
+                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10' : ''
                                             }`}
                                     >
                                         <Icon name={item.icon} />
@@ -222,20 +205,6 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                         ))}
                     </ul>
                 </nav>
-
-                <div className="p-4 border-t border-brand-dark">
-                    <div className="flex items-center space-x-3">
-                        <div className="bg-brand p-2 rounded-full shrink-0">
-                            <Icon name="user" className="w-5 h-5" />
-                        </div>
-                        {isSidebarOpen && (
-                            <div className="flex-1 overflow-hidden">
-                                <p className="font-medium truncate">Admin Sistema</p>
-                                <p className="text-brand-light text-sm truncate">Informática</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
             </aside>
         </>
     );

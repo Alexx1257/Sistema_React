@@ -7,16 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Colores personalizados basados en tu diseño actual
-        brand: {
-          light: '#60a5fa',   // Equivalente a blue-400
-          DEFAULT: '#2563eb', // Equivalente a blue-600 (Principal)
-          dark: '#1d4ed8',    // Equivalente a blue-700
-          navy: '#1e3a8a',    // Equivalente a blue-900 (Sidebar)
+        // Nombres semánticos para identificar el uso de cada color
+        ui: {
+          primary: '#2563eb',       // Color principal (botones, iconos clave)
+          primaryHover: '#1d4ed8',  // Color al pasar el mouse por elementos principales
+          accent: '#60a5fa',        // Color de acento (bordes de foco, detalles)
+          textMuted: '#60a5fa',     // Texto secundario o decorativo
         },
         sidebar: {
-          start: '#1e40af',   // blue-800
-          end: '#1e3a8a',     // blue-900
+          backgroundStart: '#1e40af', // Inicio del degradado del menú lateral
+          backgroundEnd: '#1e3a8a',   // Fin del degradado y fondos oscuros
         }
       },
     },
