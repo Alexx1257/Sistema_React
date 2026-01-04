@@ -1,19 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importamos el hook de navegación
 import Icon from '../../../Components/Common/Icon';
 
 const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarOpen }) => {
-    const [expandedSections, setExpandedSections] = useState({
+    const sidebarRef = useRef(null);
+    const navigate = useNavigate(); // Inicializamos el navegador
+    
+    // Estado inicial de las secciones (usado para el reset)
+    const initialExpandedState = {
         bienes: false,
         servicios: false,
         documentos: false,
         computo: false,
-    });
+        impresion: false,
+        proyeccion: false,
+        telecomunicaciones: false,
+        energia: false,
+        'hojas-servicio': false,
+        vales: false,
+    };
+
+    const [expandedSections, setExpandedSections] = useState(initialExpandedState);
+
+    const resetMenus = () => {
+        setExpandedSections(initialExpandedState);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (event.target.closest('.menu-toggle')) return;
+
+            if (isSidebarOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+                setIsSidebarOpen(false);
+                resetMenus();
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside, true);
+        return () => document.removeEventListener('click', handleClickOutside, true);
+    }, [isSidebarOpen, setIsSidebarOpen]);
+
+    useEffect(() => {
+        if (!isSidebarOpen) {
+            resetMenus();
+        }
+    }, [isSidebarOpen]);
 
     const toggleSection = (section) => {
         setExpandedSections(prev => ({
             ...prev,
             [section]: !prev[section]
         }));
+    };
+
+    // Lógica mejorada para manejar navegación y estado
+    const handleItemClick = (id, hasSubItems) => {
+        if (hasSubItems) {
+            if (!isSidebarOpen) {
+                setIsSidebarOpen(true);
+                setTimeout(() => toggleSection(id), 100);
+            } else {
+                toggleSection(id);
+            }
+        } else {
+            // 1. Actualizamos el estado interno para resaltar el botón
+            setActiveSection(id);
+            
+            // 2. Ejecutamos la navegación real por URL
+            // El dashboard base es /dashboard, las demás secciones son subrutas
+            if (id === 'dashboard') {
+                navigate('/dashboard');
+            } else {
+                navigate(`/dashboard/${id}`);
+            }
+
+            // 3. Si estamos en móvil, cerramos el sidebar
+            if (window.innerWidth < 1024) {
+                setIsSidebarOpen(false);
+                resetMenus();
+            }
+        }
     };
 
     const menuItems = [
@@ -45,12 +111,18 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                 {
                     id: 'telecomunicaciones',
                     name: 'Equipos de telecomunicaciones',
-                    subItems: [{ id: 'switches', name: 'Switches' }, { id: 'routers', name: 'Routers' }]
+                    subItems: [
+                        { id: 'switches', name: 'Switches' },
+                        { id: 'routers', name: 'Routers' },
+                    ]
                 },
                 {
                     id: 'energia',
                     name: 'Equipos de energía',
-                    subItems: [{ id: 'reguladores', name: 'Reguladores' }, { id: 'ups', name: 'UPS' }]
+                    subItems: [
+                        { id: 'reguladores', name: 'Reguladores' },
+                        { id: 'ups', name: 'UPS' },
+                    ]
                 },
             ]
         },
@@ -68,12 +140,18 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                 {
                     id: 'hojas-servicio',
                     name: 'Hojas de servicio',
-                    subItems: [{ id: 'hoja-registro', name: 'Registro' }, { id: 'hoja-historial', name: 'Historial' }]
+                    subItems: [
+                        { id: 'hoja-registro', name: 'Registro' },
+                        { id: 'hoja-historial', name: 'Historial' },
+                    ]
                 },
                 {
                     id: 'vales',
                     name: 'Vales',
-                    subItems: [{ id: 'vale-entrada', name: 'Vales de entrada' }, { id: 'vale-salida', name: 'Vales de salida' }]
+                    subItems: [
+                        { id: 'vale-entrada', name: 'Vales de entrada' },
+                        { id: 'vale-salida', name: 'Vales de salida' },
+                    ]
                 },
             ]
         },
@@ -94,96 +172,82 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
     return (
         <>
             {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-gray-900 bg-opacity-50 z-20 lg:hidden"
-                    onClick={() => setIsSidebarOpen(false)}
+                <div 
+                    className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[25] lg:hidden transition-opacity" 
+                    onClick={() => setIsSidebarOpen(false)} 
                 />
             )}
 
-            <aside className={`
-        fixed lg:static inset-y-0 left-0 z-30 bg-gradient-to-b from-sidebar-backgroundStart to-sidebar-backgroundEnd text-white
-        transform transition-all duration-300 ease-in-out
-        ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'}
-        lg:flex lg:flex-col
-      `}>
-                <div className="p-4 border-b border-white/10 flex items-center justify-between">
+            <aside 
+                ref={sidebarRef} 
+                className={`fixed lg:static inset-y-0 left-0 z-[30] bg-gradient-to-b from-sidebar-backgroundStart to-sidebar-backgroundEnd text-white transform transition-all duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'}`}
+            >
+                <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0">
                     <div className={`flex items-center space-x-3 overflow-hidden ${!isSidebarOpen && 'lg:hidden'}`}>
                         <div className="bg-white p-2 rounded-lg shrink-0">
                             <Icon name="computer" className="w-6 h-6 text-ui-primary" />
                         </div>
-                        <div className="whitespace-nowrap">
-                            <h1 className="text-lg font-bold">Gestión</h1>
-                        </div>
+                        <h1 className="text-lg font-bold truncate uppercase tracking-tight">Gestión</h1>
                     </div>
-                    <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 hover:bg-white/10 rounded-lg hidden lg:block"
+                    <button 
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                        className="p-2 hover:bg-white/10 rounded-lg hidden lg:block transition-colors"
                     >
                         <Icon name="menu" className="w-6 h-6" />
                     </button>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto py-4 overflow-x-hidden">
+                <nav className="flex-1 overflow-y-auto py-4 overflow-x-hidden scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
                     <ul className="space-y-1 px-3">
                         {menuItems.map((item) => (
                             <li key={item.id}>
                                 {item.subItems ? (
                                     <>
-                                        <button
-                                            onClick={() => isSidebarOpen ? toggleSection(item.id) : setIsSidebarOpen(true)}
-                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10' : ''
-                                                }`}
+                                        <button 
+                                            onClick={() => handleItemClick(item.id, true)} 
+                                            className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10 font-bold' : ''}`}
                                         >
-                                            <div className="flex items-center space-x-3">
-                                                <Icon name={item.icon} />
-                                                <span className={`${!isSidebarOpen && 'lg:hidden'}`}>{item.name}</span>
+                                            <div className="flex items-center space-x-3 min-w-0">
+                                                <Icon name={item.icon} className="shrink-0 w-5 h-5" />
+                                                <span className={`truncate text-sm font-medium ${!isSidebarOpen && 'lg:hidden'}`}>{item.name}</span>
                                             </div>
-                                            {isSidebarOpen && (
-                                                <Icon
-                                                    name={expandedSections[item.id] ? 'chevronDown' : 'chevronRight'}
-                                                    className="w-4 h-4"
-                                                />
-                                            )}
+                                            {isSidebarOpen && <Icon name={expandedSections[item.id] ? 'chevronDown' : 'chevronRight'} className="w-4 h-4 shrink-0 ml-2" />}
                                         </button>
+                                        
                                         {isSidebarOpen && expandedSections[item.id] && (
-                                            <ul className="mt-1 ml-4 space-y-1 border-l border-white/20 pl-2">
+                                            <ul className="mt-1 ml-4 space-y-1 border-l border-white/20 pl-2 transition-all">
                                                 {item.subItems.map((subItem) => (
                                                     <li key={subItem.id}>
                                                         {subItem.subItems ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => toggleSection(subItem.id)}
-                                                                    className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-white/10"
+                                                            <div className="space-y-1">
+                                                                <button 
+                                                                    onClick={() => toggleSection(subItem.id)} 
+                                                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/10 text-left min-w-0"
                                                                 >
-                                                                    <span className="text-sm">{subItem.name}</span>
-                                                                    <Icon
-                                                                        name={expandedSections[subItem.id] ? 'chevronDown' : 'chevronRight'}
-                                                                        className="w-3 h-3"
-                                                                    />
+                                                                    <span className="text-sm truncate pr-2 w-full">{subItem.name}</span>
+                                                                    <Icon name={expandedSections[subItem.id] ? 'chevronDown' : 'chevronRight'} className="w-3 h-3 shrink-0" />
                                                                 </button>
                                                                 {expandedSections[subItem.id] && (
-                                                                    <ul className="mt-1 ml-4 space-y-1 border-l border-white/10 pl-2">
+                                                                    <ul className="mt-1 ml-3 space-y-1 border-l border-white/10 pl-2">
                                                                         {subItem.subItems.map((deepItem) => (
                                                                             <li key={deepItem.id}>
-                                                                                <button
-                                                                                    onClick={() => setActiveSection(deepItem.id)}
-                                                                                    className={`w-full text-left px-4 py-1.5 rounded-lg hover:bg-white/10 ${activeSection === deepItem.id ? 'bg-ui-primary/30 font-bold' : ''
-                                                                                        }`}
+                                                                                <button 
+                                                                                    onClick={() => handleItemClick(deepItem.id, false)} 
+                                                                                    className={`w-full text-left px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors ${activeSection === deepItem.id ? 'bg-ui-primary/30 font-bold' : ''}`}
                                                                                 >
-                                                                                    <span className="text-xs">{deepItem.name}</span>
+                                                                                    <span className="text-xs truncate block">{deepItem.name}</span>
                                                                                 </button>
                                                                             </li>
                                                                         ))}
                                                                     </ul>
                                                                 )}
-                                                            </>
+                                                            </div>
                                                         ) : (
-                                                            <button
-                                                                onClick={() => setActiveSection(subItem.id)}
-                                                                className={`w-full text-left px-4 py-2 rounded-lg hover:bg-white/10 ${activeSection === subItem.id ? 'bg-ui-primary/30' : ''
-                                                                    }`}
+                                                            <button 
+                                                                onClick={() => handleItemClick(subItem.id, false)} 
+                                                                className={`w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors ${activeSection === subItem.id ? 'bg-ui-primary/30' : ''}`}
                                                             >
-                                                                <span className="text-sm">{subItem.name}</span>
+                                                                <span className="text-sm truncate block">{subItem.name}</span>
                                                             </button>
                                                         )}
                                                     </li>
@@ -192,19 +256,32 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                         )}
                                     </>
                                 ) : (
-                                    <button
-                                        onClick={() => setActiveSection(item.id)}
-                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10' : ''
-                                            }`}
+                                    <button 
+                                        onClick={() => handleItemClick(item.id, false)} 
+                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10' : ''}`}
                                     >
-                                        <Icon name={item.icon} />
-                                        <span className={`${!isSidebarOpen && 'lg:hidden'}`}>{item.name}</span>
+                                        <Icon name={item.icon} className="shrink-0 w-5 h-5" />
+                                        <span className={`truncate text-sm font-medium ${!isSidebarOpen && 'lg:hidden'}`}>{item.name}</span>
                                     </button>
                                 )}
                             </li>
                         ))}
                     </ul>
                 </nav>
+
+                <div className="p-4 border-t border-white/10 shrink-0">
+                    <div className="flex items-center space-x-3 overflow-hidden">
+                        <div className="bg-ui-primary p-2 rounded-full shrink-0">
+                            <Icon name="user" className="w-5 h-5" />
+                        </div>
+                        {isSidebarOpen && (
+                            <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate text-sm">Admin Sistema</p>
+                                <p className="text-white/50 text-xs truncate">Informática</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </aside>
         </>
     );
