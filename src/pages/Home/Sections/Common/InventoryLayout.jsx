@@ -11,6 +11,7 @@ const InventoryLayout = ({
     filterOptions = { marcas: [], areas: [] }, 
     onExportExcel, 
     onExportPDF, 
+    onAdd,              // Código nuevo: Propiedad para la acción de añadir
     children 
 }) => {
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -27,6 +28,17 @@ const InventoryLayout = ({
                     <h2 className="text-3xl font-black text-ui-primary tracking-tight">{title}</h2>
                     <p className="text-ui-textMuted text-sm font-medium">{subtitle}</p>
                 </div>
+
+                {/* Código nuevo: Botón para añadir equipos */}
+                {onAdd && (
+                    <button 
+                        onClick={onAdd}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-ui-accent hover:bg-opacity-90 text-white rounded-2xl text-sm font-black transition-all shadow-lg shadow-ui-accent/20 active:scale-95"
+                    >
+                        <Icon name="plus" className="w-5 h-5" /> 
+                        <span>Añadir Equipo</span>
+                    </button>
+                )}
             </div>
 
             {/* Barra de Herramientas */}

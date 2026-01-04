@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importamos el hook de navegación
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../Components/Common/Icon';
 
 const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarOpen }) => {
     const sidebarRef = useRef(null);
-    const navigate = useNavigate(); // Inicializamos el navegador
+    const navigate = useNavigate();
     
-    // Estado inicial de las secciones (usado para el reset)
     const initialExpandedState = {
         bienes: false,
         servicios: false,
@@ -18,6 +17,8 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
         energia: false,
         'hojas-servicio': false,
         vales: false,
+        // Agregamos el estado para la nueva sección
+        empleados: false, 
     };
 
     const [expandedSections, setExpandedSections] = useState(initialExpandedState);
@@ -53,7 +54,6 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
         }));
     };
 
-    // Lógica mejorada para manejar navegación y estado
     const handleItemClick = (id, hasSubItems) => {
         if (hasSubItems) {
             if (!isSidebarOpen) {
@@ -63,18 +63,14 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                 toggleSection(id);
             }
         } else {
-            // 1. Actualizamos el estado interno para resaltar el botón
             setActiveSection(id);
             
-            // 2. Ejecutamos la navegación real por URL
-            // El dashboard base es /dashboard, las demás secciones son subrutas
             if (id === 'dashboard') {
                 navigate('/dashboard');
             } else {
                 navigate(`/dashboard/${id}`);
             }
 
-            // 3. Si estamos en móvil, cerramos el sidebar
             if (window.innerWidth < 1024) {
                 setIsSidebarOpen(false);
                 resetMenus();
@@ -130,7 +126,8 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
             id: 'empleados',
             name: 'Empleados',
             icon: 'users',
-            subItems: [{ id: 'directorio', name: 'Directorio de empleados' }]
+            // El id 'directorio' ahora disparará la navegación a /dashboard/directorio
+            subItems: [{ id: 'directorio', name: 'Directorio de empleados' }] 
         },
         {
             id: 'servicios',
@@ -169,6 +166,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
         { id: 'sistema', name: 'Sistema', icon: 'settings' },
     ];
 
+    // ... (El resto del renderizado permanece igual para mantener compatibilidad total)
     return (
         <>
             {isSidebarOpen && (

@@ -1,7 +1,10 @@
 import React, { useState, useMemo } from 'react';
+import { exportToExcel, exportToPDF } from '../Common/ExportUtils';
 import InventoryLayout from '../Common/InventoryLayout';
 import InventoryTable from '../Common/InventoryTable';
 import Icon from '../../../../Components/Common/Icon';
+// Importación del nuevo formulario inline
+import CPUForm from './CPUForm';
 
 const CPUSection = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -10,6 +13,9 @@ const CPUSection = () => {
         area: '',
         sigtig: ''
     });
+
+    // Estado para controlar la visualización del formulario inline
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
     const [cpus] = useState([
         { 
@@ -171,9 +177,22 @@ const CPUSection = () => {
             filters={filters}
             setFilters={setFilters}
             filterOptions={filterOptions}
-            onExportExcel={() => console.log("Exportando Excel...")}
-            onExportPDF={() => console.log("Generando PDF...")}
+            onExportExcel={() => exportToExcel(filteredData, 'Inventario_CPU')}
+            onExportPDF={() => exportToPDF(filteredData, 'Inventario de CPU')}
+            // Al hacer clic en añadir, se muestra el formulario inline
+            onAdd={() => setIsFormOpen(true)}
         >
+            {/* Formulario Inline: se renderiza antes de la tabla si está abierto */}
+            {isFormOpen && (
+                <CPUForm 
+                    onClose={() => setIsFormOpen(false)} 
+                    onSave={(newData) => {
+                        console.log("Guardando nuevo equipo:", newData);
+                        // Aquí integrarías la lógica de guardado (ej. Sonner toast)
+                    }} 
+                />
+            )}
+
             <InventoryTable 
                 columns={columns} 
                 data={filteredData} 

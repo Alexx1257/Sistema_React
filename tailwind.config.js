@@ -20,6 +20,16 @@ export default {
           itemActive: '#334155',      // Color de fondo para ítems activos en el menú
         }
       },
+      // Código nuevo: Configuración centralizada de tipografía
+      fontSize: {
+        'xs-table': ['12px', '16px'],    // Para celdas de tabla
+        'xxs': ['10px', '14px'],          // Para series, hostnames y textos pequeños
+        'tiny': ['9px', '12px'],          // Para badges de empresa o tipo de equipo
+        'form-label': ['11px', '14px'],   // Para etiquetas de campos en formularios
+      },
+      fontWeight: {
+        'black': '900', // Definición explícita para font-black
+      },
       // Añadimos una animación suave para que el cambio de colores se vea premium
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
