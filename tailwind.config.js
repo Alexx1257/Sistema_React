@@ -4,36 +4,45 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+
   theme: {
+
     extend: {
+      
+      // 3. COLORS: Definición de la paleta de colores institucional
       colors: {
-        // Nueva paleta Azul Marino Profesional
         ui: {
-          primary: '#0f172a',       // Azul marino muy oscuro (Slate-900) para textos y botones base
-          primaryHover: '#1e293b',  // Un tono ligeramente más claro para hover
-          accent: '#3b82f6',        // Azul brillante para detalles que deban resaltar
-          textMuted: '#64748b',     // Gris azulado para textos secundarios
+          primary: '#0f172a',       // Azul marino profundo (Slate-900) para textos y botones principales.
+          primaryHover: '#1e293b',  // Color de interacción para botones (Slate-800).
+          accent: '#3b82f6',        // Azul brillante (Blue-500) para resaltar enlaces, iconos o bordes.
+          textMuted: '#64748b',     // Gris azulado (Slate-500) para textos secundarios o descripciones.
         },
         sidebar: {
-          backgroundStart: '#1e293b', // Slate-800 para el inicio del degradado
-          backgroundEnd: '#0f172a',   // Slate-900 para el final (Azul profundo)
-          itemActive: '#334155',      // Color de fondo para ítems activos en el menú
+          backgroundStart: '#1e293b', // Inicio del degradado del menú lateral.
+          backgroundEnd: '#0f172a',   // Final del degradado del menú lateral.
+          itemActive: '#334155',      // Fondo para el botón de la sección donde te encuentras.
         }
       },
-      // Código nuevo: Configuración centralizada de tipografía
+
+      // 4. FONT SIZE: Control centralizado de los tamaños de letra
       fontSize: {
-        'xs-table': ['12px', '16px'],    // Para celdas de tabla
-        'xxs': ['10px', '14px'],          // Para series, hostnames y textos pequeños
-        'tiny': ['9px', '12px'],          // Para badges de empresa o tipo de equipo
-        'form-label': ['11px', '14px'],   // Para etiquetas de campos en formularios
+        'xs-table': ['14px', '18px'],    // Para el contenido de las tablas (Nombres de empleados, etc.).
+        'xxs': ['14px', '15px'],        // Para datos técnicos como Cisco, Series o Hostnames.
+        'tiny': ['10px', '13px'],       // Para badges pequeños (Status, Empresa, SIGTIG).
+        'form-label': ['12px', '15px'], // Para los títulos de los campos en los formularios.
       },
+
+      // 5. FONT WEIGHT: Pesos de fuente personalizados
       fontWeight: {
-        'black': '900', // Definición explícita para font-black
+        'black': '900',
       },
-      // Añadimos una animación suave para que el cambio de colores se vea premium
+
+      // 6. ANIMATION: Definición de movimientos suaves
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
       },
+
+      // 7. KEYFRAMES: Los pasos técnicos de las animaciones
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(4px)' },
@@ -42,5 +51,8 @@ export default {
       },
     },
   },
+
+  // 8. PLUGINS: Extensiones adicionales
+
   plugins: [],
 }

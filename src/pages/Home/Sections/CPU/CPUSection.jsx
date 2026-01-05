@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+// Importaciones de Firebase
+import { db } from '../../../../firebase/config';
+import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+
 import { exportToExcel, exportToPDF } from '../Common/ExportUtils';
 import InventoryLayout from '../Common/InventoryLayout';
 import InventoryTable from '../Common/InventoryTable';
 import Icon from '../../../../Components/Common/Icon';
-// Importación del nuevo formulario inline
 import CPUForm from './CPUForm';
 
 const CPUSection = () => {
@@ -14,25 +17,38 @@ const CPUSection = () => {
         sigtig: ''
     });
 
-    // Estado para controlar la visualización del formulario inline
     const [isFormOpen, setIsFormOpen] = useState(false);
 
-    const [cpus] = useState([
-        { 
-            id: 1, expediente: 'EXP-101', serie: 'SN-001-HP', marca: 'HP', modelo: 'EliteDesk', 
-            tipo: 'CPU', ip: '192.168.1.10', hostname: 'PC-CONTABILIDAD', correoOffice: 'cont@empresa.com', 
-            usuario: 'Ana López', area: 'Finanzas', subarea: 'Contabilidad', empresa: 'Empresa A',
-            sitio: 'Torre Administrativa - Piso 2', status: 'Activo', sigtig: true, 
-            monitor: 'Dell 24"', accesorios: 'Teclado/Mouse HP' 
-        },
-        { 
-            id: 2, expediente: 'EXP-102', serie: 'SN-992-DELL', marca: 'Dell', modelo: 'Latitude', 
-            tipo: 'LAPTOP', ip: '192.168.1.15', hostname: 'LAP-SOPORTE', correoOffice: 'soporte@empresa.com', 
-            usuario: 'Carlos Ruíz', area: 'Informática', subarea: 'Soporte', empresa: 'Empresa B',
-            sitio: 'Planta Industrial - SITE', status: 'Mantenimiento', sigtig: false, 
-            monitor: 'HP 22"', accesorios: 'Mouse Genius' 
+    // Código modificado: Estado inicial vacío para conectar a Firebase
+    const [cpus, setCpus] = useState([]);
+
+    // Código nuevo: Listener en tiempo real para la colección 'cpus'
+    useEffect(() => {
+        const q = query(collection(db, 'cpus'), orderBy('hostname', 'asc'));
+        
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const docs = [];
+            querySnapshot.forEach((doc) => {
+                docs.push({ id: doc.id, ...doc.data() });
+            });
+            setCpus(docs);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    // Código nuevo: Función para persistir datos en Firestore
+    const handleSaveCPU = async (newData) => {
+        try {
+            await addDoc(collection(db, 'cpus'), {
+                ...newData,
+                createdAt: new Date()
+            });
+            console.log("Equipo guardado con éxito en Firebase");
+        } catch (error) {
+            console.error("Error al guardar en Firebase: ", error);
         }
-    ]);
+    };
 
     const filterOptions = {
         marcas: [...new Set(cpus.map(c => c.marca))],
@@ -179,17 +195,13 @@ const CPUSection = () => {
             filterOptions={filterOptions}
             onExportExcel={() => exportToExcel(filteredData, 'Inventario_CPU')}
             onExportPDF={() => exportToPDF(filteredData, 'Inventario de CPU')}
-            // Al hacer clic en añadir, se muestra el formulario inline
             onAdd={() => setIsFormOpen(true)}
         >
-            {/* Formulario Inline: se renderiza antes de la tabla si está abierto */}
             {isFormOpen && (
                 <CPUForm 
                     onClose={() => setIsFormOpen(false)} 
-                    onSave={(newData) => {
-                        console.log("Guardando nuevo equipo:", newData);
-                        // Aquí integrarías la lógica de guardado (ej. Sonner toast)
-                    }} 
+                    onSave={handleSaveCPU} // Código modificado: Usa la función de Firebase
+                    cpusExistentes={cpus}  // Código nuevo: Pasa los datos para el generador de Hostname
                 />
             )}
 

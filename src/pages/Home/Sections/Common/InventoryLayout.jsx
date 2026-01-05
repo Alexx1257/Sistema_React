@@ -6,12 +6,14 @@ const InventoryLayout = ({
     subtitle, 
     searchTerm = '', 
     setSearchTerm = () => {}, 
-    filters = {},       // Valor por defecto para evitar error de undefined
+    filters = {},       
     setFilters = () => {}, 
-    filterOptions = { marcas: [], areas: [] }, 
+    filterOptions = { marcas: [], areas: [], subareas: [] }, // Agregamos subareas
     onExportExcel, 
     onExportPDF, 
-    onAdd,              // Código nuevo: Propiedad para la acción de añadir
+    onAdd,
+    addButtonText = "Añadir Equipo",
+    filterType = "inventory", // Código nuevo: "inventory" o "employees"
     children 
 }) => {
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -21,7 +23,7 @@ const InventoryLayout = ({
     };
 
     return (
-        <div className="animate-fade-in space-y-6">
+        <div className="animate-in fade-in duration-500 space-y-6">
             {/* Cabecera */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -29,14 +31,13 @@ const InventoryLayout = ({
                     <p className="text-ui-textMuted text-sm font-medium">{subtitle}</p>
                 </div>
 
-                {/* Código nuevo: Botón para añadir equipos */}
                 {onAdd && (
                     <button 
                         onClick={onAdd}
                         className="flex items-center justify-center gap-2 px-6 py-3 bg-ui-accent hover:bg-opacity-90 text-white rounded-2xl text-sm font-black transition-all shadow-lg shadow-ui-accent/20 active:scale-95"
                     >
                         <Icon name="plus" className="w-5 h-5" /> 
-                        <span>Añadir Equipo</span>
+                        <span>{addButtonText}</span>
                     </button>
                 )}
             </div>
@@ -49,7 +50,7 @@ const InventoryLayout = ({
                         <input
                             type="text"
                             placeholder="Búsqueda rápida..."
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-ui-accent focus:ring-4 focus:ring-ui-accent/10 transition-all text-sm"
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:border-ui-accent focus:ring-4 focus:ring-ui-accent/10 transition-all text-sm font-medium"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -88,53 +89,95 @@ const InventoryLayout = ({
                     </div>
                 </div>
 
-                {/* Panel Avanzado */}
+                {/* Panel Avanzado Dinámico */}
                 <div className={`
                     grid grid-cols-1 md:grid-cols-3 gap-6 px-6 overflow-hidden transition-all duration-300 ease-in-out bg-slate-50/50
                     ${isAdvancedOpen ? 'py-6 border-t border-slate-100 opacity-100' : 'max-h-0 opacity-0'}
                 `}>
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black text-ui-primary uppercase tracking-widest pl-1">Marca</label>
-                        <select 
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
-                            value={filters?.marca || ''}
-                            onChange={(e) => handleFilterChange('marca', e.target.value)}
-                        >
-                            <option value="">Todas las marcas</option>
-                            {filterOptions?.marcas?.map(m => <option key={m} value={m}>{m}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black text-ui-primary uppercase tracking-widest pl-1">Área</label>
-                        <select 
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
-                            value={filters?.area || ''}
-                            onChange={(e) => handleFilterChange('area', e.target.value)}
-                        >
-                            <option value="">Todas las áreas</option>
-                            {filterOptions?.areas?.map(a => <option key={a} value={a}>{a}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black text-ui-primary uppercase tracking-widest pl-1">SIGTEG</label>
-                        <div className="flex gap-2">
-                            {['Todos', 'SÍ', 'NO'].map((opt) => (
-                                <button
-                                    key={opt}
-                                    onClick={() => handleFilterChange('sigteg', opt === 'Todos' ? '' : opt === 'SÍ')}
-                                    className={`flex-1 py-2 rounded-xl text-[10px] font-bold border transition-all ${
-                                        (filters?.sigteg === (opt === 'SÍ') && opt !== 'Todos') || (filters?.sigteg === '' && opt === 'Todos')
-                                        ? 'bg-ui-accent text-white border-ui-accent'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:border-ui-accent'
-                                    }`}
+                    {filterType === "inventory" ? (
+                        <>
+                            <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Marca</label>
+                                <select 
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
+                                    value={filters?.marca || ''}
+                                    onChange={(e) => handleFilterChange('marca', e.target.value)}
                                 >
-                                    {opt}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                                    <option value="">Todas las marcas</option>
+                                    {filterOptions?.marcas?.map(m => <option key={m} value={m}>{m}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Área</label>
+                                <select 
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
+                                    value={filters?.area || ''}
+                                    onChange={(e) => handleFilterChange('area', e.target.value)}
+                                >
+                                    <option value="">Todas las áreas</option>
+                                    {filterOptions?.areas?.map(a => <option key={a} value={a}>{a}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">SIGTEG</label>
+                                <div className="flex gap-2">
+                                    {['Todos', 'SÍ', 'NO'].map((opt) => (
+                                        <button
+                                            key={opt}
+                                            onClick={() => handleFilterChange('sigteg', opt === 'Todos' ? '' : opt === 'SÍ')}
+                                            className={`flex-1 py-2 rounded-xl text-xxs font-bold border transition-all ${
+                                                (filters?.sigteg === (opt === 'SÍ') && opt !== 'Todos') || (filters?.sigteg === '' && opt === 'Todos')
+                                                ? 'bg-ui-accent text-white border-ui-accent'
+                                                : 'bg-white text-slate-500 border-slate-200 hover:border-ui-accent'
+                                            }`}
+                                        >
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            {/* Código nuevo: Filtros específicos para Empleados */}
+                            <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Área</label>
+                                <select 
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
+                                    value={filters?.area || ''}
+                                    onChange={(e) => handleFilterChange('area', e.target.value)}
+                                >
+                                    <option value="">Todas las áreas</option>
+                                    {filterOptions?.areas?.map(a => <option key={a} value={a}>{a}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Sub-Área</label>
+                                <select 
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
+                                    value={filters?.subarea || ''}
+                                    onChange={(e) => handleFilterChange('subarea', e.target.value)}
+                                >
+                                    <option value="">Todas las sub-áreas</option>
+                                    {filterOptions?.subareas?.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Correo</label>
+                                <input 
+                                    type="text"
+                                    placeholder="Filtrar por dominio..."
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
+                                    value={filters?.correo || ''}
+                                    onChange={(e) => handleFilterChange('correo', e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
