@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-// Ruta corregida: Subimos 3 niveles para llegar a src/ y luego entramos a firebase/config
-import { db } from '../../../../firebase/config';
+// Rutas corregidas para la ubicación src/pages/Home/
+import { db } from '../../firebase/config';
 import { doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
-// Ruta corregida: Subimos 3 niveles para llegar a src/ y luego entramos a hooks/
-import { useDeviceCatalog } from '../../../../hooks/useDeviceCatalog';
-// Ruta corregida: Subimos 3 niveles para llegar a src/ y entramos a Components/
-import Icon from '../../../../Components/Common/Icon';
+import { useDeviceCatalog } from '../../hooks/useDeviceCatalog';
+import Icon from '../../Components/Common/Icon';
 import { toast } from 'sonner';
 
 const CatalogSection = () => {
@@ -66,7 +64,6 @@ const CatalogSection = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Panel de Marcas */}
                     <div className="space-y-4">
                         <h3 className="font-black text-ui-primary uppercase text-xs tracking-widest">Marcas de {selectedType}</h3>
                         <div className="flex gap-2">
@@ -87,7 +84,6 @@ const CatalogSection = () => {
                         </div>
                     </div>
 
-                    {/* Panel de Modelos */}
                     <div className="space-y-4">
                         <h3 className="font-black text-ui-primary uppercase text-xs tracking-widest">Modelos por Marca</h3>
                         <div className="space-y-2">
