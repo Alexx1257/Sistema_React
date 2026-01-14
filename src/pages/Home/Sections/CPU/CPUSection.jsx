@@ -1,13 +1,27 @@
 import React, { useState, useMemo, useEffect } from 'react';
-// Importaciones de Firebase
+// Importaciones de Firebase corregidas para incluir updateDoc y deleteDoc
 import { db } from '../../../../firebase/config';
-import { collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 import { exportToExcel, exportToPDF } from '../Common/ExportUtils';
 import InventoryLayout from '../Common/InventoryLayout';
 import InventoryTable from '../Common/InventoryTable';
-import Icon from '../../../../Components/Common/Icon';
+import TableActions from '../Common/TableActions'; // Importación de componente común
 import CPUForm from './CPUForm';
+import { toast } from 'sonner'; // Feedback moderno
+
+// Importación de componentes de alerta (shadcn / Radix)
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "../../../../Components/ui/alert-dialog";
+import { Form, Import } from 'lucide-react';
 
 const CPUSection = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -18,14 +32,17 @@ const CPUSection = () => {
     });
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingCpu, setEditingCpu] = useState(null); // Estado para equipo en edición
+    
+    // Estados para el manejo del diálogo de eliminación
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
-    // Código modificado: Estado inicial vacío para conectar a Firebase
     const [cpus, setCpus] = useState([]);
 
-    // Código nuevo: Listener en tiempo real para la colección 'cpus'
+    // Listener en tiempo real para la colección 'cpus'
     useEffect(() => {
         const q = query(collection(db, 'cpus'), orderBy('hostname', 'asc'));
-        
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const docs = [];
             querySnapshot.forEach((doc) => {
@@ -33,21 +50,66 @@ const CPUSection = () => {
             });
             setCpus(docs);
         });
-
         return () => unsubscribe();
     }, []);
 
-    // Código nuevo: Función para persistir datos en Firestore
+    // Función unificada para Guardar o Actualizar con Sonner
     const handleSaveCPU = async (newData) => {
+        const toastId = toast.loading(editingCpu ? "Actualizando equipo..." : "Registrando equipo...");
         try {
-            await addDoc(collection(db, 'cpus'), {
-                ...newData,
-                createdAt: new Date()
-            });
-            console.log("Equipo guardado con éxito en Firebase");
+            if (editingCpu) {
+                // Actualizar equipo existente
+                const cpuRef = doc(db, 'cpus', editingCpu.id);
+                await updateDoc(cpuRef, {
+                    ...newData,
+                    updatedAt: new Date()
+                });
+                toast.success("Equipo actualizado correctamente", { id: toastId });
+            } else {
+                // Agregar nuevo equipo
+                await addDoc(collection(db, 'cpus'), {
+                    ...newData,
+                    createdAt: new Date()
+                });
+                toast.success("Equipo registrado con éxito", { id: toastId });
+            }
+            setIsFormOpen(false);
+            setEditingCpu(null);
         } catch (error) {
-            console.error("Error al guardar en Firebase: ", error);
+            console.error("Error al persistir en Firebase: ", error);
+            toast.error("Ocurrió un error al guardar", { id: toastId });
         }
+    };
+
+    // Funciones funcionales para las acciones de la tabla
+    const handleEdit = (item) => {
+        setEditingCpu(item);
+        setIsFormOpen(true);
+    };
+
+    const handleDeleteRequest = (item) => {
+        setItemToDelete(item);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        const toastId = toast.loading("Eliminando equipo...");
+        try {
+            await deleteDoc(doc(db, 'cpus', itemToDelete.id));
+            toast.success("Equipo eliminado correctamente", { id: toastId });
+            setIsDeleteDialogOpen(false);
+            setItemToDelete(null);
+        } catch (error) {
+            toast.error("No se pudo eliminar el equipo", { id: toastId });
+        }
+    };
+
+    const handleObservation = (item) => {
+        toast.info(`Notas de ${item.hostname}`, {
+            description: item.observaciones || "Sin observaciones registradas.",
+            duration: 5000
+        });
     };
 
     const filterOptions = {
@@ -137,16 +199,15 @@ const CPUSection = () => {
             )
         },
         { 
-            header: 'Rel.', 
+            header: 'Acciones', 
+            center: true,
             render: (item) => (
-                <div className="flex gap-1.5">
-                    <div title={`Monitor: ${item.monitor}`} className="p-1.5 bg-slate-50 text-slate-400 hover:text-ui-accent hover:bg-white hover:shadow-sm rounded-lg transition-all cursor-help border border-slate-100">
-                        <Icon name="computer" className="w-4 h-4" />
-                    </div>
-                    <div title={`Accesorios: ${item.accesorios}`} className="p-1.5 bg-slate-50 text-slate-400 hover:text-ui-accent hover:bg-white hover:shadow-sm rounded-lg transition-all cursor-help border border-slate-100">
-                        <Icon name="settings" className="w-4 h-4" />
-                    </div>
-                </div>
+                <TableActions 
+                    item={item}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteRequest}
+                    onObserve={handleObservation}
+                />
             )
         }
     ];
@@ -180,6 +241,14 @@ const CPUSection = () => {
                     <p className="text-[11px] text-slate-600 font-bold">{item.area} <span className="font-normal text-slate-400">• {item.subarea}</span></p>
                     <p className="text-[10px] text-slate-400 italic mt-0.5">{item.sitio}</p>
                 </div>
+                <div className="pt-3 border-t border-slate-50 flex justify-end">
+                    <TableActions 
+                        item={item}
+                        onEdit={handleEdit}
+                        onDelete={handleDeleteRequest}
+                        onObserve={handleObservation}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -195,13 +264,14 @@ const CPUSection = () => {
             filterOptions={filterOptions}
             onExportExcel={() => exportToExcel(filteredData, 'Inventario_CPU')}
             onExportPDF={() => exportToPDF(filteredData, 'Inventario de CPU')}
-            onAdd={() => setIsFormOpen(true)}
+            onAdd={() => { setEditingCpu(null); setIsFormOpen(true); }}
         >
             {isFormOpen && (
                 <CPUForm 
-                    onClose={() => setIsFormOpen(false)} 
-                    onSave={handleSaveCPU} // Código modificado: Usa la función de Firebase
-                    cpusExistentes={cpus}  // Código nuevo: Pasa los datos para el generador de Hostname
+                    onClose={() => { setIsFormOpen(false); setEditingCpu(null); }} 
+                    onSave={handleSaveCPU}
+                    initialData={editingCpu} 
+                    cpusExistentes={cpus}
                 />
             )}
 
@@ -210,6 +280,31 @@ const CPUSection = () => {
                 data={filteredData} 
                 renderMobileCard={renderCPUMobile} 
             />
+
+            {/* Diálogo de Confirmación de Eliminación */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-black text-ui-primary">
+                            ¿Eliminar este equipo?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-500 font-medium">
+                            Estás a punto de eliminar el equipo <span className="font-bold text-ui-accent">{itemToDelete?.hostname}</span>. Esta acción no se puede deshacer y el equipo desaparecerá del inventario.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-3 pt-4">
+                        <AlertDialogCancel className="rounded-xl font-bold border-slate-200 text-slate-500 hover:bg-slate-50">
+                            CANCELAR
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={confirmDelete}
+                            className="rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200"
+                        >
+                            ELIMINAR AHORA
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </InventoryLayout>
     );
 };
