@@ -17,8 +17,8 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
         energia: false,
         'hojas-servicio': false,
         vales: false,
-        // Agregamos el estado para la nueva sección
-        empleados: false, 
+        empleados: false,
+        sistema: false, 
     };
 
     const [expandedSections, setExpandedSections] = useState(initialExpandedState);
@@ -92,6 +92,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                         { id: 'cpu', name: 'CPU' },
                         { id: 'monitores', name: 'Monitores' },
                         { id: 'accesorios', name: 'Accesorios (Teclado y Ratón)' },
+                        
                     ]
                 },
                 {
@@ -126,7 +127,6 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
             id: 'empleados',
             name: 'Empleados',
             icon: 'users',
-            // El id 'directorio' ahora disparará la navegación a /dashboard/directorio
             subItems: [{ id: 'directorio', name: 'Directorio de empleados' }] 
         },
         {
@@ -163,10 +163,18 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
             ]
         },
         { id: 'notas', name: 'Notas Internas', icon: 'notes' },
-        { id: 'sistema', name: 'Sistema', icon: 'settings' },
+        { 
+            id: 'sistema', 
+            name: 'Sistema', 
+            icon: 'settings',
+            subItems: [
+                // Se unifican los IDs a 'admin-settings' para usar el nuevo componente AdminSettings
+                { id: 'admin-settings', name: 'Catálogos y Red' },
+                { id: 'configuracion', name: 'Configuración general' }
+            ]
+        },
     ];
 
-    // ... (El resto del renderizado permanece igual para mantener compatibilidad total)
     return (
         <>
             {isSidebarOpen && (
@@ -243,7 +251,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                                         ) : (
                                                             <button 
                                                                 onClick={() => handleItemClick(subItem.id, false)} 
-                                                                className={`w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors ${activeSection === subItem.id ? 'bg-ui-primary/30' : ''}`}
+                                                                className={`w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-colors ${activeSection === subItem.id ? 'bg-ui-primary/30 font-bold' : ''}`}
                                                             >
                                                                 <span className="text-sm truncate block">{subItem.name}</span>
                                                             </button>
@@ -256,7 +264,7 @@ const Sidebar = ({ activeSection, setActiveSection, isSidebarOpen, setIsSidebarO
                                 ) : (
                                     <button 
                                         onClick={() => handleItemClick(item.id, false)} 
-                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10' : ''}`}
+                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10 ${activeSection === item.id ? 'bg-white/10 font-bold' : ''}`}
                                     >
                                         <Icon name={item.icon} className="shrink-0 w-5 h-5" />
                                         <span className={`truncate text-sm font-medium ${!isSidebarOpen && 'lg:hidden'}`}>{item.name}</span>

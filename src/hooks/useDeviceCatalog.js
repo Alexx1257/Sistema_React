@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore";
 
 /**
  * Hook para obtener el catálogo de marcas y modelos en tiempo real.
@@ -28,4 +28,34 @@ export const useDeviceCatalog = (deviceType) => {
     }, [deviceType]);
 
     return { marcas: catalog.marcas || [], modelos: catalog.modelos || {}, loading };
+};
+
+/**
+ * Código Nuevo: Hook para obtener el catálogo de sitios e IPs en tiempo real.
+ * Se conecta a la colección 'sites' para obtener empresa, nombre y segmento de IP.
+ */
+export const useSiteCatalog = () => {
+    const [sitios, setSitios] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Referencia a la colección de sitios ordenada por nombre
+        const q = query(collection(db, "sites"), orderBy("nombre", "asc"));
+
+        const unsub = onSnapshot(q, (snapshot) => {
+            const sitiosData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data() // Aquí viene el campo 'segmento' (ej: 10.5.1)
+            }));
+            setSitios(sitiosData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error al cargar el catálogo de sitios:", error);
+            setLoading(false);
+        });
+
+        return () => unsub();
+    }, []);
+
+    return { sitios, loading };
 };

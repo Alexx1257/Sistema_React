@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../../../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { DeviceInfoFields } from '../Common/CommonFields';
+// Modificación: Importación de ambos hooks
+import { useDeviceCatalog, useSiteCatalog } from '../../../../hooks/useDeviceCatalog'; 
 import Icon from '../../../../Components/Common/Icon';
 
 const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
+    // Hook del catálogo para obtener marcas y modelos de CPU
+    const { marcas, modelos, loading: loadingCatalog } = useDeviceCatalog('CPU');
+    
+    // Código nuevo: Hook para obtener sitios e IPs
+    const { sitios, loading: loadingSitios } = useSiteCatalog();
+    
     const [empleados, setEmpleados] = useState([]);
     const [formData, setFormData] = useState({
         expediente: '',
@@ -24,6 +31,12 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
         sigtig: false
     });
 
+    // Código nuevo: Obtener empresas únicas de la lista de sitios
+    const empresasUnicas = [...new Set(sitios.map(s => s.empresa))].sort();
+    
+    // Código nuevo: Filtrar sitios basados en la empresa seleccionada
+    const sitiosFiltrados = sitios.filter(s => s.empresa === formData.empresa).sort((a, b) => a.nombre.localeCompare(b.nombre));
+
     // Cargar empleados para el selector
     useEffect(() => {
         const fetchEmpleados = async () => {
@@ -38,7 +51,6 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
         fetchEmpleados();
     }, []);
 
-    // Función interna para generar hostname según reglas proporcionadas
     const calcularHostname = (nombreFull, esLaptop) => {
         if (!nombreFull) return '';
         
@@ -48,7 +60,6 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
         const apePat = (partes[1] || "").replace(/Ñ/g, "N").toUpperCase();
         const apeMat = (partes[2] || "").replace(/Ñ/g, "N").toUpperCase();
 
-        // Regla de inicial y apellidos (7 caracteres)
         hostname_base += nombre[0].toUpperCase();
         let apellidos = "";
         if (apePat.length >= 7) {
@@ -63,11 +74,11 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
 
         if (esLaptop) hostname_base += "L";
 
-        // Lógica de sufijo numérico basado en existentes
         let contadorMaximo = 0;
         cpusExistentes.forEach(cpu => {
             if (cpu.hostname && cpu.hostname.startsWith(hostname_base)) {
-                const sufijo = parseInt(cpu.hostname.slice(-2));
+                const sufijoStr = cpu.hostname.slice(-2);
+                const sufijo = parseInt(sufijoStr);
                 if (!isNaN(sufijo)) {
                     contadorMaximo = Math.max(contadorMaximo, sufijo);
                 }
@@ -101,7 +112,28 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
 
         setFormData(prev => {
             const nuevoEstado = { ...prev, [name]: valor };
-            // Si cambia el tipo, recalcular hostname
+            
+            if (name === 'marca') {
+                nuevoEstado.modelo = '';
+            }
+
+            if (name === 'empresa') {
+                nuevoEstado.sitio = '';
+                nuevoEstado.ip = '';
+            }
+
+            // Código modificado: Implementación de autocompletado de IP basado en el sitio
+            if (name === 'sitio') {
+                const sitioInfo = sitios.find(s => s.nombre === valor && s.empresa === prev.empresa);
+                if (sitioInfo && sitioInfo.segmento) {
+                    // Asegurar que el segmento termine en punto para facilitar la escritura
+                    const segmentoLimpio = sitioInfo.segmento.endsWith('.') 
+                        ? sitioInfo.segmento 
+                        : `${sitioInfo.segmento}.`;
+                    nuevoEstado.ip = segmentoLimpio;
+                }
+            }
+
             if (name === 'tipo') {
                 nuevoEstado.hostname = calcularHostname(prev.usuario, valor === 'LAPTOP');
             }
@@ -133,7 +165,46 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
                 
                 <form onSubmit={handleSubmit} className="p-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        <DeviceInfoFields formData={formData} handleChange={handleChange} />
+                        
+                        <div className="space-y-1">
+                            <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Expediente</label>
+                            <input name="expediente" value={formData.expediente} onChange={handleChange} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none" placeholder="Número de activo" />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Número de Serie</label>
+                            <input name="serie" value={formData.serie} onChange={handleChange} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none" placeholder="S/N" />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Marca</label>
+                            <select 
+                                name="marca" 
+                                value={formData.marca} 
+                                onChange={handleChange} 
+                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none"
+                                disabled={loadingCatalog}
+                            >
+                                <option value="">--- Seleccionar ---</option>
+                                {marcas.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Modelo</label>
+                            <select 
+                                name="modelo" 
+                                value={formData.modelo} 
+                                onChange={handleChange} 
+                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none"
+                                disabled={!formData.marca || loadingCatalog}
+                            >
+                                <option value="">--- Seleccionar ---</option>
+                                {(modelos[formData.marca] || []).map(mod => (
+                                    <option key={mod} value={mod}>{mod}</option>
+                                ))}
+                            </select>
+                        </div>
 
                         <div className="space-y-1">
                             <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Tipo</label>
@@ -161,7 +232,13 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
 
                         <div className="space-y-1">
                             <label className="text-form-label font-black text-ui-accent uppercase tracking-wider pl-1">Dirección IP</label>
-                            <input name="ip" value={formData.ip} onChange={handleChange} className="w-full p-2.5 bg-slate-50 border border-ui-accent/20 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none font-mono" placeholder="0.0.0.0" />
+                            <input 
+                                name="ip" 
+                                value={formData.ip} 
+                                onChange={handleChange} 
+                                className="w-full p-2.5 bg-slate-50 border border-ui-accent/20 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none font-mono font-bold" 
+                                placeholder="0.0.0.0" 
+                            />
                         </div>
 
                         <div className="space-y-1">
@@ -181,12 +258,30 @@ const CPUForm = ({ onClose, onSave, cpusExistentes = [] }) => {
 
                         <div className="space-y-1">
                             <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Empresa</label>
-                            <input name="empresa" value={formData.empresa} onChange={handleChange} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none" placeholder="Empresa..." />
+                            <select 
+                                name="empresa" 
+                                value={formData.empresa} 
+                                onChange={handleChange} 
+                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none"
+                                disabled={loadingSitios}
+                            >
+                                <option value="">--- Seleccionar ---</option>
+                                {empresasUnicas.map(emp => <option key={emp} value={emp}>{emp}</option>)}
+                            </select>
                         </div>
 
                         <div className="space-y-1">
                             <label className="text-form-label font-black text-ui-primary uppercase tracking-wider pl-1">Sitio</label>
-                            <input name="sitio" value={formData.sitio} onChange={handleChange} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none" placeholder="Edificio / Piso" />
+                            <select 
+                                name="sitio" 
+                                value={formData.sitio} 
+                                onChange={handleChange} 
+                                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs-table focus:ring-2 focus:ring-ui-accent/20 outline-none"
+                                disabled={!formData.empresa || loadingSitios}
+                            >
+                                <option value="">--- Seleccionar ---</option>
+                                {sitiosFiltrados.map(s => <option key={s.id} value={s.nombre}>{s.nombre}</option>)}
+                            </select>
                         </div>
 
                         <div className="space-y-1">

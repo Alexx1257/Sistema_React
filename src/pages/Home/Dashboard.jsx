@@ -4,11 +4,12 @@ import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import SummaryWidgets from './Components/SummaryWidgets';
 import NotesSection from './Components/NotesSection';
-import CPUSection from './Sections/CPU/CPUSection';
-import MonitorSection from './Sections/MONITOR/MonitorSection';
+import CPUSection from './Sections/Cpu/CPUSection';
+import MonitorSection from './Sections/Monitor/MonitorSection';
 import EmployeeSection from './Sections/Employees/EmployeeSection';
-// Código nuevo: Importación de la sección de administración de catálogos
-import CatalogSection from './CatalogSection';
+// Se importa el componente unificado de Administración
+import AdminSettings from './Sections/Settings/AdminSettings';
+
 const Dashboard = () => {
     const [activeSection, setActiveSection] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -60,8 +61,8 @@ const Dashboard = () => {
                         {/* Ruta para el directorio de empleados /dashboard/directorio */}
                         <Route path="directorio" element={<EmployeeSection />} />
 
-                        {/* Código nuevo: Ruta para la administración de catálogos (Marcas/Modelos) */}
-                        <Route path="catalogos" element={<CatalogSection />} />
+                        {/* Ruta unificada para Administración (Catálogos, Sitios e IPs) */}
+                        <Route path="admin-settings" element={<AdminSettings />} />
 
                         {/* Rutas para secciones futuras en desarrollo */}
                         <Route path="impresoras" element={
