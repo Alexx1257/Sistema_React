@@ -4,7 +4,8 @@ import { collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateD
 
 // UI Modernas: Notificaciones y Diálogos de Confirmación
 import { toast } from 'sonner';
-// Nota: Se asume que el componente fue creado en src/components/ui/alert-dialog.jsx
+// Código nuevo: Importación del hook de catálogos para obtener los sitios
+import { useSiteCatalog } from '../../../../hooks/useDeviceCatalog';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -32,12 +33,17 @@ const EmployeeSection = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [employees, setEmployees] = useState([]);
+    // Código nuevo: Estado para almacenar CPUs y validar duplicidad de IPs
+    const [cpus, setCpus] = useState([]);
     
+    // Código nuevo: Hook para obtener el catálogo de sitios
+    const { sitios } = useSiteCatalog();
+
     // Estados para el flujo de eliminación
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [employeeToDelete, setEmployeeToDelete] = useState(null);
 
-    // Listener de Firebase en tiempo real
+    // Listener de Firebase para Empleados
     useEffect(() => {
         const q = query(collection(db, 'employees'), orderBy('nombreCompleto', 'asc'));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -46,6 +52,19 @@ const EmployeeSection = () => {
                 docs.push({ id: doc.id, ...doc.data() });
             });
             setEmployees(docs);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Código nuevo: Listener de Firebase para CPUs (validación cruzada de IPs)
+    useEffect(() => {
+        const q = collection(db, 'cpus');
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const docs = [];
+            querySnapshot.forEach((doc) => {
+                docs.push({ id: doc.id, ...doc.data() });
+            });
+            setCpus(docs);
         });
         return () => unsubscribe();
     }, []);
@@ -72,7 +91,6 @@ const EmployeeSection = () => {
         }
     };
 
-    // Función que se ejecuta al confirmar en el Dialog
     const confirmDelete = async () => {
         if (!employeeToDelete) return;
         const loadingId = toast.loading("Eliminando registro...");
@@ -100,7 +118,7 @@ const EmployeeSection = () => {
     const filteredData = useMemo(() => {
         return employees.filter(item => {
             const matchesSearch = searchTerm === '' || 
-                [item.nombreCompleto, item.correoElectronico, item.cisco]
+                [item.nombreCompleto, item.correoElectronico, item.cisco, item.ipCisco]
                 .some(field => field?.toLowerCase().includes(searchTerm.toLowerCase()));
             
             const matchesArea = filters.area === '' || item.area === filters.area;
@@ -117,20 +135,26 @@ const EmployeeSection = () => {
             render: (item) => <div className="text-xs-table font-extrabold text-ui-primary tracking-tight">{item.nombreCompleto}</div>
         },
         { 
-            header: 'Contacto', 
+            header: 'Contacto y Red', 
             render: (item) => (
                 <div className="text-xxs">
                     <p className="font-semibold text-slate-700 leading-tight">{item.correoElectronico}</p>
-                    <p className="text-ui-accent font-mono mt-0.5">Cisco: {item.cisco}</p>
+                    <div className="flex gap-2 mt-0.5">
+                        <p className="text-ui-accent font-mono">Cisco: {item.cisco}</p>
+                        {item.ipCisco && <p className="text-slate-500 font-mono border-l pl-2">IP: {item.ipCisco}</p>}
+                    </div>
                 </div>
             )
         },
         { 
-            header: 'Ubicación', 
+            header: 'Ubicación y Área', 
             render: (item) => (
                 <div className="text-xxs">
-                    <p className="font-semibold text-slate-700 leading-tight">{item.area}</p>
-                    <p className="text-slate-400 mt-0.5 italic">{item.subarea}</p>
+                    {/* Código modificado: Se muestra el Sitio y debajo el Área/Subárea */}
+                    <p className="font-semibold text-slate-700 leading-tight">{item.sitio || 'Sin sitio asignado'}</p>
+                    <p className="text-slate-400 mt-0.5 italic">
+                        {item.area}{item.subarea ? ` • ${item.subarea}` : ''}
+                    </p>
                 </div>
             )
         },
@@ -157,7 +181,6 @@ const EmployeeSection = () => {
                         className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm border border-blue-100"
                         title="Editar Datos"
                     >
-                        {/* Icono de Lápiz para Editar */}
                         <Icon name="edit" className="w-4 h-4" />
                     </button>
                     <button 
@@ -168,7 +191,6 @@ const EmployeeSection = () => {
                         className="p-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm border border-red-100"
                         title="Eliminar Registro"
                     >
-                        {/* Icono de Basura para Eliminar */}
                         <Icon name="trash" className="w-4 h-4" />
                     </button>
                 </div>
@@ -182,7 +204,10 @@ const EmployeeSection = () => {
             <div className="flex justify-between items-start mb-2 pl-2">
                 <div className="flex flex-col">
                     <span className="text-xs-table font-black text-ui-primary leading-none">{item.nombreCompleto}</span>
-                    <span className="text-xxs text-ui-accent font-mono mt-1">Cisco: {item.cisco}</span>
+                    <div className="flex gap-2 items-center mt-1">
+                        <span className="text-xxs text-ui-accent font-mono">Cisco: {item.cisco}</span>
+                        {item.ipCisco && <span className="text-xxs text-slate-400 font-mono">| {item.ipCisco}</span>}
+                    </div>
                 </div>
                 <div className="flex gap-1">
                     <button onClick={() => handleEditClick(item)} className="p-1 text-blue-600"><Icon name="edit" className="w-4 h-4" /></button>
@@ -193,7 +218,10 @@ const EmployeeSection = () => {
                 </div>
             </div>
             <div className="pl-2 pt-2 border-t border-slate-50">
-                <p className="text-xxs text-slate-600 font-bold">{item.area} • <span className="font-normal text-slate-400">{item.subarea}</span></p>
+                {/* Código modificado: Se muestra el Sitio y el Área en móvil */}
+                <p className="text-xxs text-slate-600 font-bold">
+                    {item.sitio} • <span className="font-normal text-slate-500">{item.area}</span>
+                </p>
                 <p className="text-xxs text-slate-400 italic mt-0.5">{item.correoElectronico}</p>
             </div>
         </div>
@@ -225,6 +253,10 @@ const EmployeeSection = () => {
                     }} 
                     onSave={handleSaveEmployee}
                     initialData={editingEmployee} 
+                    // Código nuevo: Props de validación y catálogos
+                    existingEmployees={employees}
+                    cpusExistentes={cpus}
+                    sites={sitios}
                 />
             )}
 
