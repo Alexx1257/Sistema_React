@@ -1,11 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login/login";
 import Dashboard from "./pages/Home/Dashboard";
+// Nuevo código: Importación de Toaster de sonner
+import { Toaster } from 'sonner';
 
 function App() {
   return (
-    // Quitamos el centrado flex para que el Dashboard ocupe el 100% real
     <div className="min-h-screen bg-gray-50">
+      {/* Nuevo código: Componente Toaster para renderizar las alertas */}
+      <Toaster position="top-right" richColors closeButton />
+      
       <Routes>
         {/* Ruta raíz para el Login */}
         <Route path="/" element={<Login />} />

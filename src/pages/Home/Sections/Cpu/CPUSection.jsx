@@ -7,7 +7,7 @@ import { exportToExcel, exportToPDF } from '../Common/ExportUtils';
 import InventoryLayout from '../Common/InventoryLayout';
 import InventoryTable from '../Common/InventoryTable';
 import TableActions from '../Common/TableActions'; // Importación de componente común
-import CPUForm from './CPUForm';
+import CPUForm from "./CPUForm";
 import { toast } from 'sonner'; // Feedback moderno
 
 // Importación de componentes de alerta (shadcn / Radix)
