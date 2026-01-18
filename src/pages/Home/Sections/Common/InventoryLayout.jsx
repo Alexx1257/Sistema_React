@@ -8,12 +8,13 @@ const InventoryLayout = ({
     setSearchTerm = () => {}, 
     filters = {},       
     setFilters = () => {}, 
-    filterOptions = { marcas: [], areas: [], subareas: [] }, // Agregamos subareas
+    // Aseguramos que sitios esté inicializado para evitar errores de renderizado
+    filterOptions = { marcas: [], areas: [], subareas: [], sitios: [] }, 
     onExportExcel, 
     onExportPDF, 
     onAdd,
     addButtonText = "Añadir Equipo",
-    filterType = "inventory", // Código nuevo: "inventory" o "employees"
+    filterType = "inventory",
     children 
 }) => {
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -45,7 +46,6 @@ const InventoryLayout = ({
             {/* Barra de Herramientas */}
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden">
                 <div className="p-5 flex flex-col md:flex-row gap-4 items-center justify-between bg-white">
-                    {/* Buscador */}
                     <div className="relative w-full md:w-96 group">
                         <input
                             type="text"
@@ -54,10 +54,9 @@ const InventoryLayout = ({
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <Icon name="search" className="absolute left-4 top-3.5 w-4 h-4 text-slate-400 transition-colors" />
+                        <Icon name="search" className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
                     </div>
 
-                    {/* Acciones */}
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         <button 
                             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
@@ -73,29 +72,24 @@ const InventoryLayout = ({
 
                         <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block"></div>
 
-                        <button 
-                            onClick={onExportExcel}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-green-200 active:scale-95"
-                        >
+                        <button onClick={onExportExcel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-green-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-green-200 active:scale-95 transition-all">
                             <Icon name="documents" className="w-4 h-4" /> <span>Excel</span>
                         </button>
                         
-                        <button 
-                            onClick={onExportPDF}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-red-200 active:scale-95"
-                        >
+                        <button onClick={onExportPDF} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-red-600 text-white rounded-2xl text-sm font-bold shadow-lg shadow-red-200 active:scale-95 transition-all">
                             <Icon name="notes" className="w-4 h-4" /> <span>PDF</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Panel Avanzado Dinámico */}
+                {/* Panel Avanzado de Filtros */}
                 <div className={`
-                    grid grid-cols-1 md:grid-cols-3 gap-6 px-6 overflow-hidden transition-all duration-300 ease-in-out bg-slate-50/50
+                    grid grid-cols-1 ${filterType === "employees" ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 px-6 overflow-hidden transition-all duration-300 ease-in-out bg-slate-50/50
                     ${isAdvancedOpen ? 'py-6 border-t border-slate-100 opacity-100' : 'max-h-0 opacity-0'}
                 `}>
                     {filterType === "inventory" ? (
                         <>
+                            {/* Filtros para Secciones de Inventario (CPU, Monitores) */}
                             <div className="space-y-2">
                                 <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Marca</label>
                                 <select 
@@ -107,7 +101,6 @@ const InventoryLayout = ({
                                     {filterOptions?.marcas?.map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                             </div>
-
                             <div className="space-y-2">
                                 <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Área</label>
                                 <select 
@@ -119,29 +112,10 @@ const InventoryLayout = ({
                                     {filterOptions?.areas?.map(a => <option key={a} value={a}>{a}</option>)}
                                 </select>
                             </div>
-
-                            <div className="space-y-2">
-                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">SIGTEG</label>
-                                <div className="flex gap-2">
-                                    {['Todos', 'SÍ', 'NO'].map((opt) => (
-                                        <button
-                                            key={opt}
-                                            onClick={() => handleFilterChange('sigteg', opt === 'Todos' ? '' : opt === 'SÍ')}
-                                            className={`flex-1 py-2 rounded-xl text-xxs font-bold border transition-all ${
-                                                (filters?.sigteg === (opt === 'SÍ') && opt !== 'Todos') || (filters?.sigteg === '' && opt === 'Todos')
-                                                ? 'bg-ui-accent text-white border-ui-accent'
-                                                : 'bg-white text-slate-500 border-slate-200 hover:border-ui-accent'
-                                            }`}
-                                        >
-                                            {opt}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
                         </>
                     ) : (
                         <>
-                            {/* Código nuevo: Filtros específicos para Empleados */}
+                            {/* Filtros para la Sección de Empleados */}
                             <div className="space-y-2">
                                 <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Área</label>
                                 <select 
@@ -167,10 +141,23 @@ const InventoryLayout = ({
                             </div>
 
                             <div className="space-y-2">
+                                <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Sitio</label>
+                                <select 
+                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
+                                    value={filters?.sitio || ''}
+                                    onChange={(e) => handleFilterChange('sitio', e.target.value)}
+                                >
+                                    <option value="">Todos los sitios</option>
+                                    {/* Sincronización con la colección 'sites' de Firebase */}
+                                    {filterOptions?.sitios?.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
                                 <label className="text-form-label font-black text-ui-primary uppercase tracking-widest pl-1">Correo</label>
                                 <input 
                                     type="text"
-                                    placeholder="Filtrar por dominio..."
+                                    placeholder="Dominio o usuario..."
                                     className="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-xs-table font-medium outline-none focus:ring-2 focus:ring-ui-accent/20"
                                     value={filters?.correo || ''}
                                     onChange={(e) => handleFilterChange('correo', e.target.value)}
